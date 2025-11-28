@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Galería interactiva accesible — Thomas</title>
+  <style>
+    :root{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;margin:0}
+    body{padding:1.5rem;line-height:1.4;background:#f6f7fb;color:#111}
+    h1{font-size:1.6rem;margin-bottom:.5rem}
+    .gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}
+    figure{background:#fff;border-radius:8px;padding:.5rem;box-shadow:0 2px 6px rgba(20,20,40,.06);transition:transform .15s ease,box-shadow .15s ease;outline:none}
+    figure:focus{box-shadow:0 6px 18px rgba(30,90,200,.18);transform:translateY(-4px)}
+    img{display:block;width:100%;height:auto;border-radius:6px}
+    figcaption{padding:.5rem 0 .25rem;font-size:.95rem}
+    .meta{font-size:.8rem;color:#555}
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+  </style>
+</head>
+<body>
+  <h1>Galería interactiva accesible</h1>
+  <p class="meta">Use el ratón o el teclado (Tab + Enter/Espacio) para explorar. Este ejemplo añade <code>tabindex</code> automáticamente a cada <code>&lt;figure&gt;</code>.</p>
+
+  <section class="gallery" id="mi-galeria" aria-label="Galería de ejemplo">
+    <!-- Reemplace las URLs de placeholder por sus propias imágenes y mantenga un alt descriptivo -->
+    <figure data-index="1">
+      <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e" alt="Playa al atardecer con palmeras" />
+      <figcaption>Playa al atardecer — palmeras y horizonte.</figcaption>
+    </figure>
+
+    <figure data-index="2">
+      <img src="https://images.unsplash.com/photo-1501785888041-af3ef285b470" alt="Sendero entre pinos en un bosque" />
+      <figcaption>Sendero en bosque de pinos.</figcaption>
+    </figure>
+
+    <figure data-index="3">
+      <img src="https://images.unsplash.com/photo-1499346030926-9a72daac6c63" alt="Líneas de edificios y reflejos nocturnos" />
+      <figcaption>Skyline de ciudad por la noche.</figcaption>
+    </figure>
+
+    <figure data-index="4">
+      <img src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=800&q=80" alt="Montañas con cumbre nevada contra cielo azul" />
+      <figcaption>Montañas con nieves perpetuas.</figcaption>
+    </figure>
+
+    <figure data-index="5">
+      <img src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=800&q=60" alt="Dunas en un desierto con sombras marcadas" />
+      <figcaption>Dunas del desierto al amanecer.</figcaption>
+    </figure>
+
+    <figure data-index="6">
+      <img src="https://images.unsplash.com/photo-1501785888041-af3ef" alt="Lago tranquilo con una barca en primer plano" />
+      <figcaption>Lago tranquilo con barca.</figcaption>
+    </figure>
+  </section>
+
+  <script>
+    // initGallery se llamará cuando la página haya terminado de cargar
+    function initGallery () {
+      console.log('initGallery fired — la página se ha cargado');
+      addTabFocus();
+      attachMouseAndKeyboardHandlers();
+    }
+
+    // Añade tabindex="0" a cada <figure> para que sea enfocables por teclado
+    function addTabFocus () {
+      const gallery = document.getElementById('mi-galeria');
+      if (!gallery) return;
+      const figuras = gallery.querySelectorAll('figure');
+      for (let i = 0; i < figuras.length; i++) {
+        const fig = figuras[i];
+        // sólo añadir si no existe ya
+        if (!fig.hasAttribute('tabindex')) {
+          fig.setAttribute('tabindex', '0');
+        }
+      }
+      console.log('addTabFocus: tabindex añadido a', figuras.length, 'figuras');
+    }
+
+    // Manejadores de ratón y teclado (onmouseover/onmouseleave/onfocus/onblur)
+    function onImageHover (evt) {
+      const fig = evt.currentTarget;
+      fig.style.transform = 'translateY(-6px)';
+      fig.style.boxShadow = '0 8px 20px rgba(30,80,180,.14)';
+    }
+
+    function onImageLeave (evt) {
+      const fig = evt.currentTarget;
+      fig.style.transform = '';
+      fig.style.boxShadow = '';
+    }
+
+    function onImageFocus (evt) {
+      const fig = evt.currentTarget;
+      // similar al hover — ayuda al usuario de teclado a ver el foco
+      fig.style.transform = 'translateY(-6px)';
+      fig.style.boxShadow = '0 8px 20px rgba(30,80,180,.18)';
+      console.log('onImageFocus: figura enfocada, index=', fig.dataset.index);
+    }
+
+    function onImageBlur (evt) {
+      const fig = evt.currentTarget;
+      fig.style.transform = '';
+      fig.style.boxShadow = '';
+      console.log('onImageBlur: figura desenfocada, index=', fig.dataset.index);
+    }
+
+    // Adjunta mouse + keyboard listeners a cada figura
+    function attachMouseAndKeyboardHandlers () {
+      const gallery = document.getElementById('mi-galeria');
+      if (!gallery) return;
+      const figuras = gallery.querySelectorAll('figure');
+      for (let i = 0; i < figuras.length; i++) {
+        const fig = figuras[i];
+        // ratón
+        fig.addEventListener('mouseover', onImageHover);
+        fig.addEventListener('mouseleave', onImageLeave);
+        // teclado (focus/blur)
+        fig.addEventListener('focus', onImageFocus);
+        fig.addEventListener('blur', onImageBlur);
+        // permitir activar la figura con Enter o Space — ejemplo: abrir en nueva pestaña
+        fig.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.code === 'Space' || e.key === ' ') {
+            e.preventDefault();
+            const img = fig.querySelector('img');
+            if (img && img.src) {
+              window.open(img.src, '_blank');
+            }
+          }
+        });
+      }
+    }
+
+    // Registrar el listener onload
+    window.addEventListener('load', initGallery);
+  </script>
+</body>
+</html>
